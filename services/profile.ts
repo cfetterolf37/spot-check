@@ -29,7 +29,7 @@ export async function uploadAvatar(userId: string, uri: string): Promise<string 
   
   try {
     // Read the file as base64
-    const base64 = await FileSystem.readAsStringAsync(uri, {
+    await FileSystem.readAsStringAsync(uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
     

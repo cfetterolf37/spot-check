@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Easing, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,24 +34,23 @@ export default function ProfileModal({ visible, onClose }: ProfileModalProps) {
       // Reset any ongoing animations
       slideAnim.setValue(screenHeight);
       translateY.setValue(0);
-      
-      // Slide up from bottom
-      Animated.spring(slideAnim, {
+      // Slide up from bottom (no bounce)
+      Animated.timing(slideAnim, {
         toValue: 0,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-        tension: 100,
-        friction: 8,
       }).start();
     } else {
-      // Slide down to bottom
-      Animated.spring(slideAnim, {
+      // Slide down to bottom (no bounce)
+      Animated.timing(slideAnim, {
         toValue: screenHeight,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-        tension: 100,
-        friction: 8,
       }).start();
     }
-  }, [visible, slideAnim]);
+  }, [visible, slideAnim, translateY]);
 
   const handleSaveProfile = async () => {
     if (!user?.id) return;
@@ -94,7 +93,7 @@ export default function ProfileModal({ visible, onClose }: ProfileModalProps) {
       position: 'bottom',
       visibilityTime: 2000,
     });
-    onClose();
+    // No manual redirect here; AuthGate will handle it
   };
 
   const onGestureEvent = Animated.event(
@@ -109,12 +108,12 @@ export default function ProfileModal({ visible, onClose }: ProfileModalProps) {
         // Swipe down to close
         onClose();
       } else {
-        // Snap back to open position
-        Animated.spring(translateY, {
+        // Snap back to open position (no bounce)
+        Animated.timing(translateY, {
           toValue: 0,
+          duration: 250,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
-          tension: 100,
-          friction: 8,
         }).start();
       }
     }

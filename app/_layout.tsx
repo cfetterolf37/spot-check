@@ -1,49 +1,63 @@
-import { Stack, router } from "expo-router";
-import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
-import Toast from "react-native-toast-message";
-import { ErrorBoundary } from "../components/ErrorBoundary";
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { router, Stack, useSegments } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { LocationGate } from '../components/LocationGate';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { LocationProvider } from '../contexts/LocationContext';
 import { ProfileProvider } from '../contexts/ProfileContext';
 
-function RootLayoutNav() {
+function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        // User is authenticated, redirect to main app
-        router.replace('/(tabs)');
-      } else {
-        // User is not authenticated, redirect to auth
-        router.replace('/auth/login');
-      }
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/auth/login');
     }
-  }, [user, loading]);
+  }, [loading, user]);
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="auth" options={{ headerShown: false }} />
-    </Stack>
-  );
+  if (!user) {
+    // While redirecting, render nothing
+    return null;
+  }
+
+  return <>{children}</>;
 }
 
 export default function RootLayout() {
+  const segments = useSegments();
+  const isAuthRoute = segments[0] === 'auth';
+
   return (
     <ErrorBoundary>
       <AuthProvider>
         <ProfileProvider>
-          <RootLayoutNav />
-          <Toast />
+          <LocationProvider>
+            <LocationGate>
+              {isAuthRoute ? (
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="auth/login" />
+                  <Stack.Screen name="auth/register" />
+                </Stack>
+              ) : (
+                <AuthGate>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                  </Stack>
+                </AuthGate>
+              )}
+              <Toast />
+            </LocationGate>
+          </LocationProvider>
         </ProfileProvider>
       </AuthProvider>
     </ErrorBoundary>

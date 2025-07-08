@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { ProfileProvider } from '../contexts/ProfileContext';
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
@@ -40,8 +41,10 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <RootLayoutNav />
-        <Toast />
+        <ProfileProvider>
+          <RootLayoutNav />
+          <Toast />
+        </ProfileProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
